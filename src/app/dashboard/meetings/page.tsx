@@ -97,49 +97,177 @@ export default function MeetingsPage() {
 
     return (
         <div className="page-enter">
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">Meetings</h1>
-                    <p className="page-subtitle">Schedule and manage project meetings</p>
-                </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    {/* View toggle */}
-                    <div style={{ display: "flex", background: "#f0f0f5", borderRadius: 980, padding: 3 }}>
-                        {(["list", "calendar"] as const).map(v => (
-                            <button key={v} onClick={() => setViewMode(v)} style={{
-                                padding: "6px 14px", borderRadius: 980, border: "none",
-                                background: viewMode === v ? "white" : "transparent",
-                                color: viewMode === v ? "#1d1d1f" : "#86868b",
-                                fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                boxShadow: viewMode === v ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                                transition: "all 0.2s", display: "flex", alignItems: "center", gap: 5,
-                            }}>
-                                {v === "list"
-                                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" /></svg>
-                                    : <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" /></svg>
-                                }
-                                {v === "list" ? "List" : "Calendar"}
+            {showModal ? (
+                <>
+                    <div className="page-header" style={{ marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid var(--border-light)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            <button className="btn btn-secondary" onClick={() => setShowModal(false)} style={{ padding: "8px 12px" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                             </button>
-                        ))}
+                            <div>
+                                <h1 className="page-title" style={{ marginBottom: 4 }}>Schedule Meeting</h1>
+                                <p className="page-subtitle">Add a new project group meeting</p>
+                            </div>
+                        </div>
                     </div>
-                    <select className="form-select" style={{ width: 140 }}
-                        value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-                        <option value="all">All Status</option>
-                        <option value="Scheduled">Scheduled</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                    </select>
-                    {(user?.role === "admin" || user?.role === "staff") && (
-                        <button className="btn btn-primary" onClick={() => {
-                            setForm({ projectgroupid: "", meetingdatetime: "", meetingpurpose: "", meetinglocation: "", description: "" });
-                            setShowModal(true);
-                        }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
-                            Schedule Meeting
-                        </button>
-                    )}
-                </div>
-            </div>
+                    <div className="glass-card" style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
+                        <form onSubmit={handleCreate}>
+                            <div className="form-group">
+                                <label className="form-label">Project Group *</label>
+                                <select className="form-select" value={form.projectgroupid}
+                                    onChange={e => setForm({ ...form, projectgroupid: e.target.value })} required>
+                                    <option value="">Select group</option>
+                                    {groups.map(g => <option key={g.projectgroupid} value={g.projectgroupid}>{g.projectgroupname}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+                                <div className="form-group">
+                                    <label className="form-label">Date & Time *</label>
+                                    <input className="form-input" type="datetime-local" value={form.meetingdatetime}
+                                        onChange={e => setForm({ ...form, meetingdatetime: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Location</label>
+                                    <input className="form-input" value={form.meetinglocation || ""}
+                                        onChange={e => setForm({ ...form, meetinglocation: e.target.value })} placeholder="Room number or online link" />
+                                </div>
+                            </div>
+                            <div className="form-group" style={{ marginTop: 16 }}>
+                                <label className="form-label">Purpose</label>
+                                <input className="form-input" value={form.meetingpurpose || ""}
+                                    onChange={e => setForm({ ...form, meetingpurpose: e.target.value })} placeholder="Meeting agenda or purpose" />
+                            </div>
+                            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 32, paddingTop: 20, borderTop: "1px solid var(--border-light)" }}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" style={{ padding: "10px 28px" }}>Schedule Meeting</button>
+                            </div>
+                        </form>
+                    </div>
+                </>
+            ) : showDetail ? (
+                <>
+                    <div className="page-header" style={{ marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid var(--border-light)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            <button className="btn btn-secondary" onClick={() => setShowDetail(null)} style={{ padding: "8px 12px" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                            </button>
+                            <div>
+                                <h1 className="page-title" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 12 }}>
+                                    Meeting Details
+                                    <span className={`badge ${getStatusColor(showDetail.meetingstatus)}`} style={{ fontSize: 13, padding: "4px 8px" }}>{showDetail.meetingstatus}</span>
+                                </h1>
+                                <p className="page-subtitle">{showDetail.projectGroup?.projectgroupname}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
+                        <div>
+                            <div className="glass-card" style={{ marginBottom: 24 }}>
+                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: "var(--text-primary)" }}>Information</h4>
+                                <div style={{
+                                    display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20,
+                                }}>
+                                    <div><span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Group</span><p style={{ fontWeight: 600, marginTop: 4, fontSize: 14 }}>{showDetail.projectGroup?.projectgroupname || "—"}</p></div>
+                                    <div><span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Date & Time</span><p style={{ fontWeight: 600, marginTop: 4, fontSize: 14 }}>{new Date(showDetail.meetingdatetime).toLocaleString()}</p></div>
+                                    <div><span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Guide</span><p style={{ fontWeight: 600, marginTop: 4, fontSize: 14 }}>{showDetail.guideStaff?.staffname || "—"}</p></div>
+                                    <div><span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Purpose</span><p style={{ fontWeight: 600, marginTop: 4, fontSize: 14 }}>{showDetail.meetingpurpose || "—"}</p></div>
+                                    <div style={{ gridColumn: "1 / -1" }}><span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Location</span><p style={{ fontWeight: 600, marginTop: 4, fontSize: 14 }}>{showDetail.meetinglocation || "—"}</p></div>
+                                </div>
+                            </div>
+
+                            {showDetail.meetingnotes && (
+                                <div className="glass-card">
+                                    <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: "var(--text-primary)" }}>Meeting Notes</h4>
+                                    <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-secondary)" }}>{showDetail.meetingnotes}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <div className="glass-card">
+                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0071e3"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
+                                    Attendance
+                                    <span className="badge badge-primary">{showDetail.attendances.length}</span>
+                                </h4>
+                                {showDetail.attendances.length === 0 ? (
+                                    <p style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No attendance records</p>
+                                ) : (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        {showDetail.attendances.map(a => (
+                                            <div key={a.projectmeetingattendanceid} style={{
+                                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                padding: 14, background: "white", borderRadius: 12, border: "1px solid var(--border-light)",
+                                            }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                    <div style={{
+                                                        width: 32, height: 32, borderRadius: "50%",
+                                                        background: a.ispresent ? "#e8f5e9" : "#ffebee",
+                                                        color: a.ispresent ? "#0f9d58" : "#d32f2f",
+                                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                                        fontSize: 13, fontWeight: 700,
+                                                    }}>
+                                                        {a.student?.studentname.charAt(0) || "?"}
+                                                    </div>
+                                                    <span style={{ fontSize: 14, fontWeight: 600 }}>{a.student?.studentname || "Unknown"}</span>
+                                                </div>
+                                                <span className={`badge ${a.ispresent ? "badge-success" : "badge-danger"}`} style={{ fontSize: 11 }}>
+                                                    {a.ispresent ? "Present" : "Absent"}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className="page-header">
+                        <div>
+                            <h1 className="page-title">Meetings</h1>
+                            <p className="page-subtitle">Schedule and manage project meetings</p>
+                        </div>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                            {/* View toggle */}
+                            <div style={{ display: "flex", background: "#f0f0f5", borderRadius: 980, padding: 3 }}>
+                                {(["list", "calendar"] as const).map(v => (
+                                    <button key={v} onClick={() => setViewMode(v)} style={{
+                                        padding: "6px 14px", borderRadius: 980, border: "none",
+                                        background: viewMode === v ? "white" : "transparent",
+                                        color: viewMode === v ? "#1d1d1f" : "#86868b",
+                                        fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                        boxShadow: viewMode === v ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                                        transition: "all 0.2s", display: "flex", alignItems: "center", gap: 5,
+                                    }}>
+                                        {v === "list"
+                                            ? <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" /></svg>
+                                            : <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" /></svg>
+                                        }
+                                        {v === "list" ? "List" : "Calendar"}
+                                    </button>
+                                ))}
+                            </div>
+                            <select className="form-select" style={{ width: 140 }}
+                                value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                                <option value="all">All Status</option>
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            {(user?.role === "admin" || user?.role === "staff") && (
+                                <button className="btn btn-primary" onClick={() => {
+                                    setForm({ projectgroupid: "", meetingdatetime: "", meetingpurpose: "", meetinglocation: "", description: "" });
+                                    setShowModal(true);
+                                }}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+                                    Schedule
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
             {loading ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 16 }}>
@@ -348,121 +476,7 @@ export default function MeetingsPage() {
                 </div>
             )}
 
-            {/* Create Meeting Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-                            <h3 className="modal-title" style={{ marginBottom: 0 }}>Schedule Meeting</h3>
-                            <button onClick={() => setShowModal(false)} style={{
-                                background: "var(--bg-hover)", border: "none", borderRadius: 8,
-                                padding: 6, cursor: "pointer", color: "var(--text-muted)", display: "flex",
-                            }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
-                            </button>
-                        </div>
-                        <form onSubmit={handleCreate}>
-                            <div className="form-group">
-                                <label className="form-label">Project Group *</label>
-                                <select className="form-select" value={form.projectgroupid}
-                                    onChange={e => setForm({ ...form, projectgroupid: e.target.value })} required>
-                                    <option value="">Select group</option>
-                                    {groups.map(g => <option key={g.projectgroupid} value={g.projectgroupid}>{g.projectgroupname}</option>)}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Date & Time *</label>
-                                <input className="form-input" type="datetime-local" value={form.meetingdatetime}
-                                    onChange={e => setForm({ ...form, meetingdatetime: e.target.value })} required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Purpose</label>
-                                <input className="form-input" value={form.meetingpurpose}
-                                    onChange={e => setForm({ ...form, meetingpurpose: e.target.value })} placeholder="Meeting agenda or purpose" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Location</label>
-                                <input className="form-input" value={form.meetinglocation}
-                                    onChange={e => setForm({ ...form, meetinglocation: e.target.value })} placeholder="Room number or online link" />
-                            </div>
-                            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 8 }}>
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Schedule</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Detail Modal */}
-            {showDetail && (
-                <div className="modal-overlay" onClick={() => setShowDetail(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-                            <h3 className="modal-title" style={{ marginBottom: 0 }}>Meeting Details</h3>
-                            <button onClick={() => setShowDetail(null)} style={{
-                                background: "var(--bg-hover)", border: "none", borderRadius: 8,
-                                padding: 6, cursor: "pointer", color: "var(--text-muted)", display: "flex",
-                            }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
-                            </button>
-                        </div>
-
-                        <div style={{
-                            display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20,
-                            padding: 16, background: "var(--bg-section)", borderRadius: 10,
-                        }}>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Group</span><p style={{ fontWeight: 600, marginTop: 4 }}>{showDetail.projectGroup?.projectgroupname || "—"}</p></div>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Status</span><p style={{ marginTop: 4 }}><span className={`badge ${getStatusColor(showDetail.meetingstatus)}`}>{showDetail.meetingstatus}</span></p></div>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Date & Time</span><p style={{ fontWeight: 600, marginTop: 4 }}>{new Date(showDetail.meetingdatetime).toLocaleString()}</p></div>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Guide</span><p style={{ fontWeight: 600, marginTop: 4 }}>{showDetail.guideStaff?.staffname || "—"}</p></div>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Purpose</span><p style={{ fontWeight: 600, marginTop: 4 }}>{showDetail.meetingpurpose || "—"}</p></div>
-                            <div><span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Location</span><p style={{ fontWeight: 600, marginTop: 4 }}>{showDetail.meetinglocation || "—"}</p></div>
-                        </div>
-
-                        {showDetail.meetingnotes && (
-                            <div style={{ marginBottom: 20, padding: 16, background: "var(--bg-section)", borderRadius: 10, borderLeft: "3px solid #3f51b5" }}>
-                                <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Notes</span>
-                                <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-secondary)", marginTop: 6 }}>{showDetail.meetingnotes}</p>
-                            </div>
-                        )}
-
-                        <div>
-                            <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#3f51b5"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
-                                Attendance ({showDetail.attendances.length})
-                            </h4>
-                            {showDetail.attendances.length === 0 ? (
-                                <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No attendance records</p>
-                            ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                    {showDetail.attendances.map(a => (
-                                        <div key={a.projectmeetingattendanceid} style={{
-                                            display: "flex", alignItems: "center", justifyContent: "space-between",
-                                            padding: "10px 14px", background: "var(--bg-section)", borderRadius: 8,
-                                        }}>
-                                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                                <div style={{
-                                                    width: 30, height: 30, borderRadius: "50%",
-                                                    background: a.ispresent ? "#e8f5e9" : "#ffebee",
-                                                    color: a.ispresent ? "#0f9d58" : "#d32f2f",
-                                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                                    fontSize: 12, fontWeight: 700,
-                                                }}>
-                                                    {a.student?.studentname.charAt(0) || "?"}
-                                                </div>
-                                                <span style={{ fontSize: 14 }}>{a.student?.studentname || "Unknown"}</span>
-                                            </div>
-                                            <span className={`badge ${a.ispresent ? "badge-success" : "badge-danger"}`}>
-                                                {a.ispresent ? "Present" : "Absent"}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                </>
             )}
 
             {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
