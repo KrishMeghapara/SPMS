@@ -1,0 +1,79 @@
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/db";
+import { getUserFromRequest } from "@/lib/auth";
+import { successResponse, errorResponse, notFoundResponse, unauthorizedResponse, forbiddenResponse } from "@/lib/response";
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const user = getUserFromRequest(req);
+        if (!user) return unauthorizedResponse();
+
+        const { id } = await params;
+        const student = await prisma.student.findUnique({
+            where: { studentid: parseInt(id) },
+            select: {
+                studentid: true,
+                studentname: true,
+                phone: true,
+                email: true,
+                description: true,
+                created: true,
+                modified: true,
+            },
+        });
+        if (!student) return notFoundResponse("Student not found");
+
+        return successResponse(student);
+    } catch (error) {
+        console.error("Get student error:", error);
+        return errorResponse("Internal server error");
+    }
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const user = getUserFromRequest(req);
+        if (!user) return unauthorizedResponse();
+        if (user.role !== "admin") return forbiddenResponse();
+
+        const { id } = await params;
+        const body = await req.json();
+
+        const updateData: Record<string, unknown> = { modified: new Date() };
+        if (body.studentname) updateData.studentname = body.studentname;
+        if (body.phone !== undefined) updateData.phone = body.phone;
+        if (body.email !== undefined) updateData.email = body.email;
+        if (body.description !== undefined) updateData.description = body.description;
+
+        if (body.password) {
+            const { hashPassword } = await import("@/lib/auth");
+            updateData.password = await hashPassword(body.password);
+        }
+
+        const student = await prisma.student.update({
+            where: { studentid: parseInt(id) },
+            data: updateData,
+        });
+
+        return successResponse({ studentid: student.studentid, studentname: student.studentname });
+    } catch (error) {
+        console.error("Update student error:", error);
+        return errorResponse("Internal server error");
+    }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const user = getUserFromRequest(req);
+        if (!user) return unauthorizedResponse();
+        if (user.role !== "admin") return forbiddenResponse();
+
+        const { id } = await params;
+        await prisma.student.delete({ where: { studentid: parseInt(id) } });
+
+        return successResponse(null, "Student deleted");
+    } catch (error) {
+        console.error("Delete student error:", error);
+        return errorResponse("Internal server error");
+    }
+}

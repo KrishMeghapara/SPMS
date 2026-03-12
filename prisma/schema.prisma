@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model projecttype {
+  projecttypeid   Int            @id @default(autoincrement())
+  projecttypename String         @db.VarChar(100)
+  description     String?
+  created         DateTime?      @default(now()) @db.Timestamp(6)
+  modified        DateTime?      @default(now()) @db.Timestamp(6)
+  projectgroups   projectgroup[]
+}
+
+model staff {
+  staffid             Int              @id @default(autoincrement())
+  staffname           String           @db.VarChar(150)
+  phone               String?          @db.VarChar(15)
+  email               String?          @db.VarChar(150)
+  password            String           @db.VarChar(255)
+  description         String?
+  created             DateTime?        @default(now()) @db.Timestamp(6)
+  modified            DateTime?        @default(now()) @db.Timestamp(6)
+  convenerGroups      projectgroup[]   @relation("ConvenerStaff")
+  expertGroups        projectgroup[]   @relation("ExpertStaff")
+  guidedMeetings      projectmeeting[] @relation("GuideStaff")
+}
+
+model student {
+  studentid            Int                          @id @default(autoincrement())
+  studentname          String                       @db.VarChar(150)
+  phone                String?                      @db.VarChar(15)
+  email                String?                      @db.VarChar(150)
+  password             String?                      @db.VarChar(255)
+  description          String?
+  created              DateTime?                    @default(now()) @db.Timestamp(6)
+  modified             DateTime?                    @default(now()) @db.Timestamp(6)
+  groupMemberships     projectgroupmember[]
+  meetingAttendances   projectmeetingattendance[]
+}
+
+model projectgroup {
+  projectgroupid     Int                  @id @default(autoincrement())
+  projectgroupname   String               @db.VarChar(150)
+  projecttypeid      Int?
+  guidestaffname     String?              @db.VarChar(150)
+  projecttitle       String?              @db.VarChar(200)
+  projectarea        String?              @db.VarChar(150)
+  projectdescription String?
+  averagecpi         Decimal?             @db.Decimal(4, 2)
+  convenerstaffid    Int?
+  expertstaffid      Int?
+  status             String?              @default("Pending") @db.VarChar(50)
+  description        String?
+  created            DateTime?            @default(now()) @db.Timestamp(6)
+  modified           DateTime?            @default(now()) @db.Timestamp(6)
+  projectType        projecttype?         @relation(fields: [projecttypeid], references: [projecttypeid])
+  convenerStaff      staff?               @relation("ConvenerStaff", fields: [convenerstaffid], references: [staffid])
+  expertStaff        staff?               @relation("ExpertStaff", fields: [expertstaffid], references: [staffid])
+  members            projectgroupmember[]
+  meetings           projectmeeting[]
+}
+
+model projectgroupmember {
+  projectgroupmemberid Int            @id @default(autoincrement())
+  projectgroupid       Int?
+  studentid            Int?
+  isgroupleader        Boolean?       @default(false)
+  studentcgpa          Decimal?       @db.Decimal(4, 2)
+  description          String?
+  created              DateTime?      @default(now()) @db.Timestamp(6)
+  modified             DateTime?      @default(now()) @db.Timestamp(6)
+  projectGroup         projectgroup?  @relation(fields: [projectgroupid], references: [projectgroupid])
+  student              student?       @relation(fields: [studentid], references: [studentid])
+}
+
+model projectmeeting {
+  projectmeetingid         Int                          @id @default(autoincrement())
+  projectgroupid           Int?
+  guidestaffid             Int?
+  meetingdatetime          DateTime                     @db.Timestamp(6)
+  meetingpurpose           String?                      @db.VarChar(200)
+  meetinglocation          String?                      @db.VarChar(150)
+  meetingnotes             String?
+  meetingstatus            String?                      @db.VarChar(50)
+  meetingstatusdescription String?
+  meetingstatusdatetime    DateTime?                    @db.Timestamp(6)
+  description              String?
+  created                  DateTime?                    @default(now()) @db.Timestamp(6)
+  modified                 DateTime?                    @default(now()) @db.Timestamp(6)
+  projectGroup             projectgroup?                @relation(fields: [projectgroupid], references: [projectgroupid])
+  guideStaff               staff?                       @relation("GuideStaff", fields: [guidestaffid], references: [staffid])
+  attendances              projectmeetingattendance[]
+}
+
+model projectmeetingattendance {
+  projectmeetingattendanceid Int              @id @default(autoincrement())
+  projectmeetingid           Int?
+  studentid                  Int?
+  ispresent                  Boolean?         @default(false)
+  attendanceremarks          String?          @db.VarChar(100)
+  description                String?
+  created                    DateTime?        @default(now()) @db.Timestamp(6)
+  modified                   DateTime?        @default(now()) @db.Timestamp(6)
+  projectMeeting             projectmeeting?  @relation(fields: [projectmeetingid], references: [projectmeetingid])
+  student                    student?         @relation(fields: [studentid], references: [studentid])
+}
