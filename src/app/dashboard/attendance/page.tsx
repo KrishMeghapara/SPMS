@@ -90,6 +90,12 @@ export default function AttendanceAnalyticsPage() {
     const [summary, setSummary] = useState<Summary | null>(null);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<"all" | "low" | "good">("all");
+    const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+
+    const showToast = (message: string, type = "success") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const fetchData = useCallback(async () => {
         try {
@@ -97,7 +103,7 @@ export default function AttendanceAnalyticsPage() {
             setStudents(data.students);
             setMonthly(data.monthly);
             setSummary(data.summary);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load attendance data", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 
@@ -278,6 +284,8 @@ export default function AttendanceAnalyticsPage() {
                     </div>
                 </>
             )}
+
+            {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
         </div>
     );
 }

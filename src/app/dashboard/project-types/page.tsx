@@ -29,7 +29,7 @@ export default function ProjectTypesPage() {
         try {
             const data = await apiFetch("/api/project-types");
             setTypes(data);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load project types", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 

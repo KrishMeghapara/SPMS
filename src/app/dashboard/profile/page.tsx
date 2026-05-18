@@ -34,7 +34,7 @@ export default function ProfilePage() {
             const data = await apiFetch("/api/auth/profile");
             setProfile(data);
             setForm({ name: data.name, phone: data.phone || "", description: data.description || "" });
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load profile", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 
@@ -47,7 +47,6 @@ export default function ProfilePage() {
             showToast("Profile updated successfully");
             setEditing(false);
             fetchProfile();
-            // Update local storage user name
             const saved = localStorage.getItem("spms_user");
             if (saved) {
                 const u = JSON.parse(saved);

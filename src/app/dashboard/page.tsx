@@ -66,13 +66,14 @@ export default function DashboardPage() {
     const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
     const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
             try {
                 const data = await apiFetch("/api/dashboard");
                 setStats(data.stats); setRecentProjects(data.recentProjects); setRecentMeetings(data.recentMeetings);
-            } catch (err) { console.error(err); }
+            } catch (err) { setError(err instanceof Error ? err.message : "Failed to load dashboard"); }
             finally { setLoading(false); }
         })();
     }, [apiFetch]);
@@ -91,6 +92,14 @@ export default function DashboardPage() {
                     <div className="skeleton bento-span-2" style={{ height: 300 }} />
                     <div className="skeleton bento-span-2" style={{ height: 300 }} />
                 </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: "48px 0", textAlign: "center", color: "#ff3b30" }}>
+                <p style={{ fontSize: 15, fontWeight: 500 }}>{error}</p>
             </div>
         );
     }

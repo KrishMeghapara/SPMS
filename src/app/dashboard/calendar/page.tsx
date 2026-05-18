@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useApi, useAuth } from "@/context/AuthContext";
+import { useApi } from "@/context/AuthContext";
 
 interface Meeting {
     projectmeetingid: number;
@@ -17,18 +17,23 @@ interface Meeting {
 
 export default function CalendarPage() {
     const { apiFetch } = useApi();
-    const { user } = useAuth();
     const [meetings, setMeetings] = useState<Meeting[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"month" | "week">("month");
+    const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+
+    const showToast = (message: string, type = "success") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const fetchMeetings = useCallback(async () => {
         try {
             const data = await apiFetch("/api/project-meetings");
             setMeetings(data);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load calendar", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 
@@ -325,6 +330,8 @@ export default function CalendarPage() {
                     )}
                 </div>
             )}
+
+            {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
         </div>
     );
 }

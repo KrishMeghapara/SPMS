@@ -70,7 +70,7 @@ export default function ProjectGroupsPage() {
             setProjectTypes(typesData);
             setStaffList(staffData);
             setAllStudents(studentsData);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load groups", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 

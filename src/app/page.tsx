@@ -144,23 +144,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Video / App Mockup Section */}
-            <section style={{
-                position: "relative", zIndex: 10,
-                maxWidth: 1200, margin: "0 auto 120px", padding: "0 24px",
-                animation: "heroFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both",
-            }}>
-                <div style={{
-                    width: "100%", height: "auto", aspectRatio: "16/9",
-                    background: "linear-gradient(135deg, rgba(41,151,255,0.1), rgba(162,82,250,0.1))",
-                    borderRadius: 24, border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
-                    position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
-                }}>
-                    <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPHBhdGggZD0iTTAgMEw4IDhaTTAgOEw4IDBaIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIwLjAxIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')", opacity: 0.5 }} />
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.2)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" /></svg>
-                </div>
-            </section>
+
 
             {/* Stats Bar */}
             <section style={{ maxWidth: 1000, margin: "0 auto 120px", padding: "0 24px", position: "relative", zIndex: 10 }}>

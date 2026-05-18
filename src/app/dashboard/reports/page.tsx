@@ -100,10 +100,16 @@ export default function ReportsPage() {
     const [filterStatus, setFilterStatus] = useState("all");
     const [search, setSearch] = useState("");
     const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+
+    const showToast = (message: string, type = "success") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const fetchReports = useCallback(async () => {
         try { const d = await apiFetch("/api/reports"); setProjects(d.projects); setStats(d.stats); }
-        catch (e) { console.error(e); }
+        catch (err) { showToast(err instanceof Error ? err.message : "Failed to load reports", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 
@@ -314,6 +320,8 @@ export default function ReportsPage() {
                     </table>
                 )}
             </div>
+
+            {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
         </div>
     );
 }

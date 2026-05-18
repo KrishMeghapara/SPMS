@@ -32,7 +32,7 @@ export default function StaffPage() {
         try {
             const data = await apiFetch("/api/staff");
             setStaffList(data);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load staff", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 

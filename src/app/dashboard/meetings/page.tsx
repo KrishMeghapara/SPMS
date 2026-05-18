@@ -48,7 +48,7 @@ export default function MeetingsPage() {
             ]);
             setMeetings(meetingsData);
             setGroups(groupsData);
-        } catch (err) { console.error(err); }
+        } catch (err) { showToast(err instanceof Error ? err.message : "Failed to load meetings", "error"); }
         finally { setLoading(false); }
     }, [apiFetch]);
 
